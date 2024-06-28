@@ -37,8 +37,30 @@ public class BlackJack {
         }
     }
 
+    public class Player{
+        String name;
+        int accountBalance;
+
+        Player(String name, int accountBalance){
+            this.name = name;
+            this.accountBalance = accountBalance;
+        }
+
+        public String StringOfAccountBalance() {
+            return String.valueOf(accountBalance);
+        }
+
+        public int removeBet(int bet){
+            return accountBalance -= bet;
+        }
+    }
+
     ArrayList<Card> deck; 
     Random random = new Random();
+
+    //Player account
+    Player currentPlayer = new Player("Adam Weston", 10000);
+    int currentBet;
 
     //Dealer 
     ArrayList<Card> dealerHand;
@@ -52,8 +74,8 @@ public class BlackJack {
     int playerAceCount;
 
     //fönster
-    int boardWidth = 600;
-    int boardHeight = 600;
+    int boardWidth = 800;
+    int boardHeight = 800;
 
     int cardWidth = 110;
     int cardHeight = 154;
@@ -82,9 +104,19 @@ public class BlackJack {
         for(int i = 0; i < playerHand.size(); i++){
             Card card = playerHand.get(i);
             Image cardImage = new ImageIcon(getClass().getResource(card.getImagePath())).getImage();
-            g.drawImage(cardImage, 20 + (cardWidth + 5)*i, 320, cardWidth, cardHeight, null);
+            g.drawImage(cardImage, 20 + (cardWidth + 5)*i, 420, cardWidth, cardHeight, null);
             
         }
+
+        //Draw new balance
+        g.setFont(new Font("Helvetica", Font.PLAIN, 30));
+        g.setColor(Color.white);
+        g.drawString(currentPlayer.name, 580, 630);
+        g.drawString(currentPlayer.StringOfAccountBalance(), 580, 665);
+
+
+        
+        //Draw game result
 
         if (!stayButton.isEnabled()){
             dealerSum = reduceDealerAce();
@@ -110,11 +142,10 @@ public class BlackJack {
                 message = "You Lose!";
             }
 
-            g.setFont(new Font("Helvetica", Font.PLAIN, 30));
+            g.setFont(new Font("Helvetica", Font.PLAIN, 40));
             g.setColor(Color.white);
-            g.drawString(message, 220, 250);
+            g.drawString(message, 320, 340);
         }
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,12 +159,12 @@ public class BlackJack {
     JButton hitButton = new JButton("Hit");
     JButton stayButton = new JButton("Stay");
     JButton replayButton = new JButton("Play Again!");
-
+    JButton confirmBetButton = new JButton("Play again! Bet:");
+    JTextField placedBet = new JTextField();
 
 
     BlackJack() {
-        startGame();
-        
+    
         frame.setVisible(true);
         frame.setSize(boardWidth, boardHeight);
         frame.setLocationRelativeTo(null);
@@ -141,18 +172,29 @@ public class BlackJack {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         gamePanel.setLayout(new BorderLayout());
-        gamePanel.setBackground(new Color(36, 69, 118));
+        gamePanel.setBackground(new Color(53, 101, 77));
         frame.add(gamePanel);
 
         hitButton.setFocusable(false);
         buttonPanel.add(hitButton);
+
         stayButton.setFocusable(false);
         buttonPanel.add(stayButton);
-        replayButton.setFocusable(false);
-        replayButton.setEnabled(false);
-        buttonPanel.add(replayButton);
-        frame.add(buttonPanel, BorderLayout.SOUTH);
 
+        confirmBetButton.setFocusable(false);
+        confirmBetButton.setEnabled(false);
+        buttonPanel.add(confirmBetButton);
+
+        placedBet.setPreferredSize(new Dimension(70, 30)); 
+        buttonPanel.add(placedBet);
+
+        frame.add(buttonPanel, BorderLayout.SOUTH);
+        
+        
+        
+        gamePanel.setLayout(null); 
+        
+        startGame();
 
         hitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
@@ -174,7 +216,7 @@ public class BlackJack {
             public void actionPerformed(ActionEvent e){
                 hitButton.setEnabled(false);
                 stayButton.setEnabled(false);
-                replayButton.setEnabled(true);
+                confirmBetButton.setEnabled(true);
 
                 while (dealerSum < 17){
                     Card card = deck.remove(deck.size()-1);
@@ -189,23 +231,29 @@ public class BlackJack {
 
         gamePanel.repaint();
 
-        replayButton.addActionListener(new ActionListener() {
+
+        confirmBetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
+                
+
+                //Wrap with try catch
+                int currentBet = Integer.valueOf(placedBet.getText());
+                System.out.println("BET");
+                System.out.println(currentBet);
+
+                //*** Insufficient funds
+                currentPlayer.removeBet(currentBet);
+                    
                 hitButton.setEnabled(true);
                 stayButton.setEnabled(true);
-                replayButton.setEnabled(false);
+                confirmBetButton.setEnabled(false);
 
                 startGame();
 
                 gamePanel.repaint();
-                
-
             }
-        });
+        });      
     }
-
-
-
 
     public void startGame(){
         buildDeck();
@@ -225,6 +273,8 @@ public class BlackJack {
         dealerAceCount += card.isAce() ? 1 : 0;
 
         dealerHand.add(card);
+        System.out.println("BALANCE");
+        System.out.println(currentPlayer.accountBalance);
 
         System.out.println("DEALER:");
         System.out.println(hiddenCard);
@@ -274,7 +324,7 @@ public class BlackJack {
             Card randomCard = deck.get(randomInt);
 
             deck.set(i, randomCard);
-            deck.set(randomInt, randomCard);
+            deck.set(randomInt, currCard);
 
         }
     }
