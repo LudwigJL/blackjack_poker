@@ -40,18 +40,35 @@ public class BlackJack {
     public class Player{
         String name;
         int accountBalance;
+        int bet;
 
         Player(String name, int accountBalance){
             this.name = name;
             this.accountBalance = accountBalance;
+            this.bet = bet;
         }
 
         public String StringOfAccountBalance() {
             return String.valueOf(accountBalance);
         }
 
-        public int removeBet(int bet){
+        public int removeBet(){
             return accountBalance -= bet;
+        }
+
+        public int drawBet(){
+            return accountBalance += bet;
+        }
+
+        //BlackJack pays 3 to 1
+        public int addBetBlackjack() {
+            return accountBalance += bet * 3;
+
+        }
+
+        //Winning hand pays 2 to 1
+        public int addBet(){
+            return accountBalance += bet * 2;
         }
     }
 
@@ -114,10 +131,7 @@ public class BlackJack {
         g.drawString(currentPlayer.name, 580, 630);
         g.drawString(currentPlayer.StringOfAccountBalance(), 580, 665);
 
-
-        
         //Draw game result
-
         if (!stayButton.isEnabled()){
             dealerSum = reduceDealerAce();
             playerSum = reducePlayerAce();
@@ -126,22 +140,29 @@ public class BlackJack {
             System.out.println(playerSum);
 
             String message = "";
+
             if (playerSum > 21){
                 message = "You Bust!";
             }
             else if (dealerSum > 21){
                 message = "Dealer Bust!";
+                currentPlayer.addBet();
             }
             else if (playerSum == dealerSum){
                 message = "Draw!";
+                currentPlayer.drawBet();
             }
             else if (playerSum > dealerSum){
                 message = "You Win!";
+                currentPlayer.addBet();
+
+                System.out.println("AFTER ADDBET: " + currentPlayer.accountBalance + " The bet was: " + currentPlayer.bet);
+                
             }
             else if (playerSum < dealerSum){
                 message = "You Lose!";
+                //No money back, no operations.
             }
-
             g.setFont(new Font("Helvetica", Font.PLAIN, 40));
             g.setColor(Color.white);
             g.drawString(message, 320, 340);
@@ -190,8 +211,6 @@ public class BlackJack {
 
         frame.add(buttonPanel, BorderLayout.SOUTH);
         
-        
-        
         gamePanel.setLayout(null); 
         
         startGame();
@@ -225,6 +244,8 @@ public class BlackJack {
                     dealerHand.add(card);
                 }
 
+
+
                 gamePanel.repaint();
             }
         });
@@ -238,11 +259,10 @@ public class BlackJack {
 
                 //Wrap with try catch
                 int currentBet = Integer.valueOf(placedBet.getText());
-                System.out.println("BET");
-                System.out.println(currentBet);
+                currentPlayer.bet = currentBet;
 
                 //*** Insufficient funds
-                currentPlayer.removeBet(currentBet);
+                currentPlayer.removeBet();
                     
                 hitButton.setEnabled(true);
                 stayButton.setEnabled(true);
