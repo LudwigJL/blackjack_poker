@@ -52,6 +52,10 @@ public class BlackJack {
             return String.valueOf(accountBalance);
         }
 
+        public String StringOfBet(){
+            return String.valueOf(bet);
+        }
+
         public int removeBet(){
             return accountBalance -= bet;
         }
@@ -130,6 +134,8 @@ public class BlackJack {
         g.setColor(Color.white);
         g.drawString(currentPlayer.name, 580, 630);
         g.drawString(currentPlayer.StringOfAccountBalance(), 580, 665);
+        g.drawString("Bet: " + currentPlayer.StringOfBet(), 580, 700);
+
 
         //Draw game result
         if (!stayButton.isEnabled()){
@@ -152,17 +158,20 @@ public class BlackJack {
                 message = "Draw!";
                 currentPlayer.drawBet();
             }
+            else if(playerSum > dealerSum && playerSum == 21){
+                message = "Blackjack win!";
+                currentPlayer.addBetBlackjack();
+            }
             else if (playerSum > dealerSum){
                 message = "You Win!";
                 currentPlayer.addBet();
-
                 System.out.println("AFTER ADDBET: " + currentPlayer.accountBalance + " The bet was: " + currentPlayer.bet);
                 
             }
             else if (playerSum < dealerSum){
                 message = "You Lose!";
-                //No money back, no operations.
             }
+
             g.setFont(new Font("Helvetica", Font.PLAIN, 40));
             g.setColor(Color.white);
             g.drawString(message, 320, 340);
@@ -171,7 +180,6 @@ public class BlackJack {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
     }
 };
@@ -243,9 +251,6 @@ public class BlackJack {
                     dealerAceCount += card.isAce() ? 1 : 0;
                     dealerHand.add(card);
                 }
-
-
-
                 gamePanel.repaint();
             }
         });
@@ -254,23 +259,33 @@ public class BlackJack {
 
 
         confirmBetButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e){
-                
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    //Checking input
+                    int currentBet = Integer.valueOf(placedBet.getText());
+        
+                    // Bet size check
+                    if (currentBet <= currentPlayer.accountBalance) {
+                        currentPlayer.bet = currentBet;
+                        currentPlayer.removeBet();
+        
+                        hitButton.setEnabled(true);
+                        stayButton.setEnabled(true);
+                        confirmBetButton.setEnabled(false);
+        
+                        startGame();
+                        gamePanel.repaint();
+                    } else {
+                        
+                        JOptionPane.showMessageDialog(null, "Insufficient funds. Please enter a valid bet amount.");
+                    }
+                } catch (NumberFormatException ex) {
 
-                //Wrap with try catch
-                int currentBet = Integer.valueOf(placedBet.getText());
-                currentPlayer.bet = currentBet;
-
-                //*** Insufficient funds
-                currentPlayer.removeBet();
-                    
-                hitButton.setEnabled(true);
-                stayButton.setEnabled(true);
-                confirmBetButton.setEnabled(false);
-
-                startGame();
-
-                gamePanel.repaint();
+                    JOptionPane.showMessageDialog(null, "Invalid input. Please enter a numeric value.");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred. Please try again.");
+                }
             }
         });      
     }
@@ -319,6 +334,8 @@ public class BlackJack {
         System.out.println(playerHand);
         System.out.println(playerSum);
         System.out.println(playerAceCount);
+
+        gamePanel.repaint();
 
     }
 

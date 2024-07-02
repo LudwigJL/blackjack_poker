@@ -1,1 +1,1 @@
-# Small Java projects
+# Blackjack poker game. 
